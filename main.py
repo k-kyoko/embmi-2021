@@ -6,7 +6,7 @@ import numpy as np
 import scipy
 import tqdm
 
-from .myclass import GlobalConfig
+from .myclass import GlobalConfig, Exdata
 from .mylib import parse_data, seq_filter
 
 
@@ -51,11 +51,11 @@ for p in tqdm.tqdm(conf.Path):
     if os.path.isfile(p):
         paths = [p]
     elif os.path.isdir(p):
-        paths = glob.glob(f'{p}/**/*.mat')
+        paths = glob.glob(f'{p}/**/*.mat') # TODO: Set the exact pattern of target
     
     data_raw = {
-        os.path.basename(p).split('.')[0]: parse_data(p) # TODO: Parse Data here
-        for p in paths  # TODO: Set the exact pattern of target
+        os.path.basename(p).split('.')[0]: Exdata.from_mat_file(p)
+        for p in paths 
     }
 
 # Filter
