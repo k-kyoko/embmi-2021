@@ -5,6 +5,7 @@ from pprint import pformat
 
 import numpy as np
 import scipy
+import pandas as pd
 import tqdm
 
 from myclass import GlobalConfig, Exdata
@@ -86,3 +87,31 @@ data_filt = {
     for k, v in tqdm.tqdm(data_raw.items())
 } 
 print('Filter Process DONE')
+
+
+########## Split data by trials : TODO ##########
+
+# data_trials = key=n_session, value=np.ndarray(129, time_length, n_trial(25))
+
+########## Removing artifacted trials : TODO ##########
+
+path_remove = sorted(glob.glob('./data_ST/removefiles_*'))
+removefiles = []
+
+for p in path_remove:
+    temp = pd.read_csv(p, header=None).values
+    removefiles.append(temp)
+    
+data_unart = data_filt
+
+#for session in range(6):
+#    for trial in n_trial:
+#        if removefiles[session][0, trial] == exist ? 
+#    data_unart[f'S{session}'][trial] = None
+
+
+########## Parse data by conditions : randombeep / EMG / EEG : parse_data ##########
+
+# ERP_EEG = dict : keys = str:n_session, values = np.ndarray:[129, time, trial]
+
+########## Draw waveform of COI ##########
