@@ -1,6 +1,7 @@
 import glob
 import os
 from typing import List, Callable
+from pprint import pformat
 
 import numpy as np
 import scipy
@@ -49,27 +50,25 @@ EMG = {
 
 # Load Data
 print(f'Start Data Loading @ {conf.Path}')
-assert os.path.exists(conf.Path), f"FileNotFound: Check path, got {conf.Path}"
-if os.path.isfile(conf.Path):
-    print('path set as Filename')
-    paths = [conf.Path]
-elif os.path.isdir(conf.Path):
-    print('path set as directory name')
-    paths = glob.glob(f'{conf.Path}/*.mat') # TODO: Set the exact pattern of target
-    print(f'got path list {paths}')
+assert os.path.isdir(conf.Path), f"FileNotFound: Check path, got {conf.Path}"
 
-data_raw = {}
-for p in tqdm.tqdm(paths):
-#     with tqdm.tqdm(paths) as pbar:
-#         pbar.set_postfix(f'filename={p}')
-    data_raw = {
-        os.path.basename(p).split('_')[1]: Exdata.from_mat_file(p)
-        for p in paths
-    }
-print(f'Data Loaded\n    {data_raw}')
+paths = glob.glob(f'{conf.Path}/*.mat') # TODO: Set the exact pattern of target
+print(f'got path list \n{pformat(paths)}')
+
+paths_params = sorted(glob.glob(f'{conf.Path}/*params.mat'))
+paths_data = sorted([i for i in paths if i not in paths_params])
+print(f'got data paths: \n{pformat(paths_data)}, \nparams paths: {pformat(paths_params)}')
+assert len(paths_params) == len(paths_data), \
+f"Got different number of paths, data:{len(paths_data)}, params:{len(paths_params)}"
+
+data_raw = {
+    os.path.basename(pd).split('_')[1]: Exdata.from_mat_file(pd, pp)
+    for (pd, pp) in tqdm.tqdm(zip(paths_data, paths_params))
+}
+print(f'Data Loaded\n{pformat(data_raw)}')
 
 # Filter
-print(f'Filter Process')
+print('Filter Process')
 filters = [
     lambda data: scipy.signal.detrend(data),
     lambda data: scipy.signal.filtfilt(
@@ -86,4 +85,4 @@ data_filt = {
     k: seq_filter(v.EEG, filters)
     for k, v in tqdm.tqdm(data_raw.items())
 } 
-print(f'Filter Process DONE')
+print('Filter Process DONE')

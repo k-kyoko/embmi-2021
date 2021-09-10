@@ -91,38 +91,54 @@ class Exdata(NamedTuple):
 
     Attributes
     ----------
-    trial: str
+    Session: str
     EEG: np.ndarray
     DIN: List[tuple[str, float]]
     SamplingRate: float
+    Randt: np.ndarray
 
     Class Methods
     -------------
     Exdata.from_mat_file(path: str)
 
     """
-    trial: str
+    session: int
     EEG: np.ndarray
     DIN: List[Tuple[str, float]]
     SamplingRate: float
+    Randt: np.ndarray
 
     def __repr__(self)->str:
-        return f'Exdata(trial:{self.trial}, EEG:{self.EEG.shape}, DIN:({len(self.DIN)}), SamplingRate:{self.SamplingRate})'
+        return f'Exdata(session:{self.session}, EEG:{self.EEG.shape}, DIN:({len(self.DIN)}), SamplingRate:{self.SamplingRate}, Randt:{self.Randt.shape})'
 
     @classmethod
-    def from_mat_file(cls, path: str):
-        mat = loadmat(path)
-        trial = os.path.basename(path).split('_')[1]
-        sr = float(mat['EEGSamplingRate'][0])
-        _din = mat['evt_255_DINs']
+    def from_mat_file(cls, path_data: str, path_params: str):
+        
+        data = loadmat(path_data)
+        params = loadmat(path_params)
+        
+        session = int(os.path.basename(path_data).split('_')[1][1:2])
+        params_num = int(os.path.basename(path_params).split('_')[1][-1])
+        
+        assert session == params_num, \
+        f'Data number: {session} differs from params number: {params_num}'
+        
+        sr = float(data['EEGSamplingRate'][0])
+        _din = data['evt_255_DINs']
         din = []
         for i in range(_din.shape[1]):
             label = str(_din[0, i][0])
             value = float(_din[1, i][0])
             din.append((label, value))
 
-        for k in mat.keys():
+        for k in data.keys():
             if ('mff' in k) and ('EMG' not in k):
-                eeg = mat[k]
+                eeg = data[k]
+        
+        randt = params['randt'][:, params_num-1]
+        
 
-        return cls(trial, eeg, din, sr)
+        return cls(session, eeg, din, sr, randt)
+
+
+        
