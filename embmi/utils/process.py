@@ -2,8 +2,14 @@ from typing import List, Callable
 
 import numpy as np
 import omegaconf
-import pandas as pd
-from scipy.signal import butter
+# from scipy.signal import butter
+
+
+__all__ = [
+    'interpolate_filter_config',
+    'parse_data',
+    'seq_filter',
+]
 
 
 def interpolate_filter_config(conf: omegaconf.DictConfig) -> omegaconf.DictConfig:
@@ -16,33 +22,24 @@ def interpolate_filter_config(conf: omegaconf.DictConfig) -> omegaconf.DictConfi
         conf.filter.Notch[0] / (Fs/2),
         conf.filter.Notch[0] / (Fs/2)
     )
-    Fpass = butter(
-        conf.filter.butter_N, Wn, btype='bandpass'
-    )
-    Fstop = butter(
-        conf.filter.butter_N, stopWn, btype='bandpass'
-    )
+
+    # Fpass = butter(
+    #     conf.filter.butter_N, Wn, btype='bandpass'
+    # )
+    # Fstop = butter(
+    #     conf.filter.butter_N, stopWn, btype='bandpass'
+    # )
     
     new_conf = conf.copy()
     new_conf.filter.update({
         'Wn': Wn,
-        'Fpass': Fpass,
         'StopWn': stopWn,
-        'Fstop': Fstop
+        # 'Fpass': Fpass,
+        # 'Fstop': Fstop
     })
-    return conf
+    return new_conf
 
 
-def read_eyeclosed_memo(path: str, n_trial: int) -> pd.DataFrame:
-    cont = {}
-    
-    with open(path, 'r') as f:
-        file = f.readlines()
-    for f in file:
-        line = f.rstrip().split(',')
-        value = np.asarray([int(i) - 1 for i in line[1:]])  # python index starts from 0
-        cont[line[0]] = np.bincount(value, minlength=n_trial)
-    return pd.DataFrame(cont, index=np.arange(1, n_trial+1))
 
 def parse_data(path: str) -> np.ndarray:
     '''
@@ -64,6 +61,7 @@ def parse_data(path: str) -> np.ndarray:
     '''
 
     return np.zeros(10)
+
 
 def seq_filter(
     data: np.ndarray,

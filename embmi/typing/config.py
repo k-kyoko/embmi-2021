@@ -1,7 +1,13 @@
 from dataclasses import dataclass
 from typing import List, Tuple
 
+# import numpy as np
+# import numpy.typing as npt
 from omegaconf import MISSING
+
+__all__ = [
+    'ScriptConfig'
+]
 
 @dataclass
 class FilterConfig:
@@ -13,9 +19,9 @@ class FilterConfig:
     butter_N: int
 
     Wn: __FloatTuple = MISSING
-    Fpass: __FloatTuple = MISSING
     StopWn: __FloatTuple = MISSING
-    Fstop: __FloatTuple = MISSING
+    # Fpass: npt.NDArray[np.floating] = MISSING
+    # Fstop: npt.NDArray[np.floating] = MISSING
 
 
 @dataclass
