@@ -51,7 +51,9 @@ EMG = {
 
 # Load Data
 print(f'Start Data Loading @ {conf.Path}')
-assert os.path.isdir(conf.Path), f"FileNotFound: Check path, got {conf.Path}"
+for p in conf.Path:
+    assert os.path.isdir(p),\
+        f"FileNotFound: Check path, got {conf.Path}"
 
 paths = glob.glob(f'{conf.Path}/*.mat') # TODO: Set the exact pattern of target
 print(f'got path list \n{pformat(paths)}')
