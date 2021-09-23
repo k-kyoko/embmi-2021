@@ -1,0 +1,40 @@
+# Use '???' to indicate the filed is empty
+input_dir: ./data/
+output_dir: ./output/
+
+# when you're confused about glob pattern, see also
+# https://note.nkmk.me/python-glob-usage/
+file_pattern: day[1-5]_t[1-6].mat
+ignore_pattern: ???
+ignore_files:
+    - ???
+
+experiment:
+    n_Ch: 129
+    n_Trial: 25
+    n_Session: 6
+    Ref_ch: 
+        - 57
+        - 100
+    COI:
+        - 7
+        - 31
+        - 36
+        - 55
+        - 80
+        - 104
+        - 105
+        - 106
+        - 112
+        - 129
+#   [6 13 112 7 106 30 105 31 80 37 87 55 54 79 129]
+
+filter:
+    Fs: 1000
+    Bandpass:
+        - 1
+        - 20
+    Notch: 
+        - 49
+        - 51
+    butter_N: 3
