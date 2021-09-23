@@ -1,68 +1,86 @@
 import glob
 import os
-from typing import List, Callable
-from pprint import pformat
+import sys
+from typing import cast
 
 import numpy as np
-import scipy
+import omegaconf
 import pandas as pd
+import scipy
 import tqdm
+from omegaconf import OmegaConf
 
-from myclass import GlobalConfig, Exdata
-from mylib import parse_data, seq_filter
+import embmi.types as types
+import embmi.utils  as utils
+from embmi.utils import log
+
+########## Parameters ##########
+CONFIG_PATH = './notebooks/config.yml'
 
 
 
 ########## Program Configure ##########
-print('Set Program Config')
-# Initialize Configure manually
-# TODO: replace by YAML loader
-conf = GlobalConfig(Path='./data_ST', Workspace='./analysis_result')
-num_unknown: int = 2000
+with log.biginform('Set Program Config'):
+    with log.inform('Load YAML Config File'):
+        conf_schema = OmegaConf.structured(types.ScriptConfig)
+        conf_raw = OmegaConf.load(CONFIG_PATH)
+        conf = OmegaConf.merge(conf_schema, conf_raw)
 
-# Make Workspace Directory
-os.makedirs(conf.Workspace, exist_ok=True)
+    with log.inform('Interpolate configuration'):
+        conf = utils.interpolate_filter_config(cast(omegaconf.DictConfig, conf))
 
-print(f'Current Settings')
-print(conf._asdict())
-########## Preprocess ##########
-# Create Data Struct
-data_master = np.zeros((conf.n_Ch, num_unknown, conf.n_Trial, conf.n_Session))
+    with log.inform(f'Create Output dir at {conf.output_dir}'):
+        os.makedirs(conf.output_dir , exist_ok=True)
 
-n_subject: int = 3
+    with log.inform('Validate the content'):
+        assert os.path.isdir(conf.input_dir),\
+            f"DirectoryNotFound: Check path, got {conf.input_dir}"
 
-ERP = {
-    "t_ave": np.zeros((conf.n_Ch, n_subject)),
-    "f_ave": np.zeros((conf.n_Ch, n_subject)),
-    "e_ave": np.zeros((conf.n_Ch, n_subject)),
-}
+    log.inform(f'Load finished', '> ')
+    log.inform(f'Current Settings', '> ')
+    log.indicate(OmegaConf.to_yaml(conf))
 
-BMI = {
-    'I_ave': np.zeros((len(conf.COI), num_unknown, n_subject)),
-}
+########## Data Loading ##########
+with log.biginform(f'Data Loading'):
+    with log.inform(f'Search Target Files from {conf.input_dir}'):
+        data_path = glob.glob(
+            f'{conf.input_dir}/**/{conf.experiment.file_pattern}',
+            recursive=True
+        )
 
-RandomBeep ={
-    'ave': np.zeros((len(conf.COI), num_unknown, n_subject)),
-}
+        log.inform(f'got path list: {data_path}', '> ')
 
-EMG = {
-    'ave': np.zeros((len(conf.COI), num_unknown, n_subject))
-}
+        param_path = glob.glob(
+            f'{conf.input_dir}/**/{conf.experiment.param_pattern}',
+            recursive=True
+        )
+        log.inform(f'got params paths: {param_path}', '> ')
 
-# Load Data
-print(f'Start Data Loading @ {conf.Path}')
-for p in conf.Path:
-    assert os.path.isdir(p),\
-        f"FileNotFound: Check path, got {conf.Path}"
+        eye_path = glob.glob(
+            f'{conf.input_dir}/**/{conf.experiment.eye_pattern}',
+            recursive=True
+        )
+        log.inform(f'got eye paths: {eye_path}', '> ')
 
-paths = glob.glob(f'{conf.Path}/*.mat') # TODO: Set the exact pattern of target
-print(f'got path list \n{pformat(paths)}')
 
-paths_params = sorted(glob.glob(f'{conf.Path}/*params.mat'))
-paths_data = sorted([i for i in paths if i not in paths_params])
-print(f'got data paths: \n{pformat(paths_data)}, \nparams paths: {pformat(paths_params)}')
-assert len(paths_params) == len(paths_data), \
-f"Got different number of paths, data:{len(paths_data)}, params:{len(paths_params)}"
+    with log.inform('Validate Searched Target files'):
+        if len(data_path) == 0:
+            log.warn(f'NO EXPERIMENT DATA DETECTED > {data_path}')
+        if len(param_path) == 0:
+            log.warn(f'NO PARAMS DATA DETECTED > {param_path}')
+        if len(eye_path) == 0:
+            log.warn(f'NO EYECLOSED DATA DETECTED > {eye_path}')
+
+        assert len(param_path) == len(data_path), \
+            f"Got different number of paths, data:{len(data_path)}, params:{len(param_path)}"
+
+    with log.inform('Load Eye Close data'):
+        eye_data = [utils.read_eyeclosed_memo(e, conf.experiment.n_Trial) for e in eye_path]
+        log.inform(f'got eye data(first data):', '> ')
+        log.indicate(f'{eye_data[0]}...')
+
+sys.exit(1)
+
 
 data_raw = {
     os.path.basename(pd).split('_')[1]: Exdata.from_mat_file(pd, pp)
@@ -89,6 +107,34 @@ data_filt = {
     for k, v in tqdm.tqdm(data_raw.items())
 } 
 print('Filter Process DONE')
+
+########## Preprocess ##########
+with log.biginform('Pre Process'):
+    with log.inform('Create Data Struct'):
+        num_unknown = 2000
+        n_subject: int = 3
+
+        data_master = np.zeros((
+            conf.experiment.n_Ch,
+            num_unknown,
+            conf.experiment.n_Trial,
+            conf.experiment.n_Session
+        ))
+
+        ERP = {
+            "t_ave": np.zeros((conf.experiment.n_Ch, n_subject)),
+            "f_ave": np.zeros((conf.experiment.n_Ch, n_subject)),
+            "e_ave": np.zeros((conf.experiment.n_Ch, n_subject)),
+        }
+        BMI = {
+            'I_ave': np.zeros((len(conf.experiment.COI), num_unknown, n_subject)),
+        }
+        RandomBeep ={
+            'ave': np.zeros((len(conf.experiment.COI), num_unknown, n_subject)),
+        }
+        EMG = {
+            'ave': np.zeros((len(conf.experiment.COI), num_unknown, n_subject))
+        }
 
 
 ########## Split data by trials : TODO ##########
