@@ -1,9 +1,9 @@
-from . import typing
+from . import types
 from . import utils
 
-from .typing import *
+from .types import *
 from .utils import *
 
 __all__ = []
-__all__.extend(typing.__all__)
+__all__.extend(types.__all__)
 __all__.extend(utils.__all__)

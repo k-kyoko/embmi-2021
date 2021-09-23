@@ -1,15 +1,20 @@
 # Use '???' to indicate the filed is empty
-input_dir: ./data/
-output_dir: ./output/
+input_dir: ./data_ST/
+output_dir: ./analysis_result/
 
-# when you're confused about glob pattern, see also
-# https://note.nkmk.me/python-glob-usage/
-file_pattern: day[1-5]_t[1-6].mat
-ignore_pattern: ???
-ignore_files:
-    - ???
 
 experiment:
+    # when you're confused about glob pattern, see also
+    # https://note.nkmk.me/python-glob-usage/
+    file_pattern: day[1-5]_t[1-6].mat
+    ignore_pattern: ???
+    ignore_files:
+        - ???
+
+    param_pattern: day[1-5]_t[1-6]_params.mat
+    eye_pattern: eyeclosed.txt
+
+
     n_Ch: 129
     n_Trial: 25
     n_Session: 6

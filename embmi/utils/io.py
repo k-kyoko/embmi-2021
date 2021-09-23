@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.io import loadmat
 
-from embmi.typing import Exdata
+from embmi.types import Exdata
 
 __all__ = [
     'load_exdata',
@@ -41,12 +41,17 @@ def load_exdata(path_data: str, path_params: str):
 
 def read_eyeclosed_memo(path: str, n_trial: int) -> pd.DataFrame:
     cont = {}
-    
+
     with open(path, 'r') as f:
         file = f.readlines()
     for f in file:
         line = f.rstrip().split(',')
-        value = np.asarray([int(i) - 1 for i in line[1:]])  # python index starts from 0
-        cont[line[0]] = np.bincount(value, minlength=n_trial)
+        # python index starts from 0
+        value = np.asarray([int(i) - 1 if i != '' else np.NaN for i in line[1:]])
+        value = value[~np.isnan(value)].astype(np.int8)
+        if len(value) != 0:
+            cont[line[0]] = np.bincount(value, minlength=n_trial)
+        else:
+            cont[line[0]] = np.zeros(n_trial)
     return pd.DataFrame(cont, index=np.arange(1, n_trial+1))
 

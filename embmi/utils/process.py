@@ -1,4 +1,4 @@
-from typing import List, Callable
+from typing import Callable, List
 
 import numpy as np
 import omegaconf
@@ -49,12 +49,12 @@ def parse_data(path: str) -> np.ndarray:
     ----------
     path: str
         Path to target file
-    
+
     Returns
     -------
     raw data: np.ndarray
         Parsed Data
-    
+
     Note
     ----
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.loadmat.html#scipy.io.loadmat
@@ -69,7 +69,7 @@ def seq_filter(
 ) -> np.ndarray:
     """
     Run filter program by sequence
-    
+
     Parameters
     ----------
     data: np.ndarray
