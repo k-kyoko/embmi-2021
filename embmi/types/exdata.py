@@ -11,7 +11,7 @@ __all__ = [
 @dataclass(frozen=True)
 class Exdata:
     session: int
-    EEG: npt.ArrayLike
+    EEG: npt.NDArray[np.floating]
     DIN: List[Tuple[str, float]]
     SamplingRate: float
-    Randt: np.ndarray
+    Randt: npt.NDArray[np.floating]

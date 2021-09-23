@@ -9,6 +9,7 @@ __all__ = [
     'ScriptConfig'
 ]
 
+
 @dataclass
 class FilterConfig:
     __FloatTuple = Tuple[float, float]
@@ -26,6 +27,13 @@ class FilterConfig:
 
 @dataclass
 class ExperimentConfig:
+    file_pattern: str
+    ignore_pattern: str
+    ignore_files: List[str]
+
+    param_pattern: str
+    eye_pattern: str
+
     n_Ch: int
     n_Trial: int
     n_Session: int
@@ -37,9 +45,6 @@ class ExperimentConfig:
 class ScriptConfig:
     input_dir: str
     output_dir: str
-    file_pattern: str
-    ignore_pattern: str
-    ignore_files: List[str]
-    
+
     experiment: ExperimentConfig
     filter: FilterConfig
