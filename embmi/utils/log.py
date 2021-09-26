@@ -2,8 +2,6 @@ from enum import Enum, unique
 from typing import Any, Dict
 
 __all__ = [
-    'Color',
-    'cprint',
     'alert',
     'biginform',
     'indicate',

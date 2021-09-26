@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 
 # import numpy as np
@@ -21,16 +21,11 @@ class FilterConfig:
 
     Wn: __FloatTuple = MISSING
     StopWn: __FloatTuple = MISSING
-    # Fpass: npt.NDArray[np.floating] = MISSING
-    # Fstop: npt.NDArray[np.floating] = MISSING
 
 
 @dataclass
 class ExperimentConfig:
     file_pattern: str
-    ignore_pattern: str
-    ignore_files: List[str]
-
     param_pattern: str
     eye_pattern: str
 
@@ -40,11 +35,16 @@ class ExperimentConfig:
     Ref_ch: Tuple[int, int]
     COI: List[int]
 
+    ignore_pattern: str = ''
+    ignore_files: List[str] = field(default_factory=list)
+
+
 
 @dataclass
 class ScriptConfig:
     input_dir: str
     output_dir: str
+    test_run: bool
 
     experiment: ExperimentConfig
     filter: FilterConfig
