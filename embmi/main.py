@@ -144,7 +144,7 @@ with log.biginform('Process Data'):
                     i_trial += 1
                 if din == 'DIN6':
                     t = int(time)
-                    temp[f'trial{i_trial}'] = [t-1000, t+999]
+                    temp[f'trial{i_trial}'] = [t-1000, t+1000]
             data['idx_trial'].append(
                 pd.DataFrame(temp, index=['start', 'stop']).T
             )
