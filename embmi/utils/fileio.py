@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
+from scipy.io import loadmat
 
 __all__ = [
     'load_file',
@@ -12,22 +13,24 @@ __all__ = [
 
 
 def load_file(path: str, *, test_run=False) -> Dict[str, Any]:
-    with open(path, 'rb') as f:
-        temp = pickle.load(f)
+    
     if test_run:
-        return temp.__dict__
+        with open(path, 'rb') as f:
+            temp = pickle.load(f).__dict__
+    else:
+        temp = loadmat(path)
+    
     return temp
 
 
 def load_param(path: str, *, test_run=False) -> List[str]:
-    if test_run:
-        with open(path, 'r') as f:
-            temp = f.readlines()
-        return temp
+    if not test_run:
+        temp = loadmat(path)
     else:
         with open(path, 'rb') as f:
             temp = pickle.load(f)
-        return temp
+    
+    return temp
 
 
 

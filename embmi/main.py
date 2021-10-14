@@ -13,8 +13,9 @@ import embmi.types as types
 import embmi.utils  as utils
 from embmi.utils import log
 
-########## Parameters ##########
-CONFIG_PATH = './config.yml'
+########## Parameters jupyter on ~/Desktop/embmi-2021 ##########
+# CONFIG_PATH = './config/takesei.yml'
+CONFIG_PATH = './config/nishida_day3.yml'
 
 
 ########## Program Configure ##########
@@ -142,7 +143,7 @@ with log.biginform('Process Data'):
             for din, time in d.DIN:
                 if din == 'DIN2':
                     i_trial += 1
-                if din == 'DIN6':
+                if din in ('DIN6', 'DIN7', 'DIN8'):
                     t = int(time)
                     temp[f'trial{i_trial}'] = [t-1000, t+1000]
             data['idx_trial'].append(
@@ -151,9 +152,8 @@ with log.biginform('Process Data'):
 
     with log.inform('Remove eyeclosed data'):
         data['idx_trial_eye'] = []
-        target = zip(data['idx_trial'], data['eye'])
-        for s, (idx, eye) in tqdm.tqdm(enumerate(target, 1)):
-            col = eye.loc[:, f'session{s}']
+        for s, idx in tqdm.tqdm(enumerate(data['idx_trial'], 1)):
+            col = data['eye'][0].loc[:, f'session{s}']
             eye = col[col.values == 1].index
             eye = [f'trial{x}' for x in eye if f'trial{x}' in idx.index]
             log.inform(f'Dropped Trial in session{s}')
@@ -168,10 +168,11 @@ with log.biginform('Process Data'):
         for idx, d, ex in tqdm.tqdm(target):
             temp = {}
             for trial, timing in idx.iterrows():
-                temp[trial] = (
-                    ex.Randt[int(trial[5:])],
-                    d[:, timing.start:timing.stop]
-                )
+                if (int(trial[5:]) - 1) < conf.experiment.n_Trial:
+                    temp[trial] = (
+                        ex.Randt[int(trial[5:]) - 1],
+                        d[:, timing.start:timing.stop]
+                    )
             data['master'].append(temp)
 
         log.inform('Created master table', '> ')
